@@ -6,6 +6,7 @@ import { UserEntity } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
+  private userService: any;
   constructor(
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
@@ -36,5 +37,9 @@ export class UserService {
   async remove(id: number): Promise<number> {
     await this.userRepository.delete(id);
     return id;
+  }
+  async findByEmail(email: string): Promise<UserEntity | undefined> {
+    console.log('findByEmail');
+    return await this.userRepository.findOne({ where: { email } });
   }
 }
