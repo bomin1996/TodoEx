@@ -14,7 +14,7 @@ import { UserService } from './user.service';
 import { UserEntity } from './entities/user.entity';
 import { Response } from 'express';
 
-@Controller('user')
+@Controller('auth')
 export class UserController {
   constructor(private userService: UserService) {}
 

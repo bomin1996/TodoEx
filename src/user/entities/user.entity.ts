@@ -1,12 +1,11 @@
 import {
   Column,
-  CreateDateColumn,
-  DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
-  UpdateDateColumn,
 } from 'typeorm';
+import { TodoEntity } from '../../todos/entities/todo.entity';
 
 @Entity({ name: 'user' })
 @Unique(['email'])
@@ -20,12 +19,6 @@ export class UserEntity {
   @Column()
   password: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updateAt: Date;
-
-  @DeleteDateColumn()
-  deletedAt: Date;
+  @OneToMany(() => TodoEntity, (todo) => todo.user)
+  todos: TodoEntity[];
 }
