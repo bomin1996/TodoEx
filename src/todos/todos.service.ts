@@ -1,57 +1,39 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TodoEntity } from './entities/todo.entity';
+import { UserEntity } from '../user/entities/user.entity';
 import { Repository } from 'typeorm';
-import { UserService } from '../user/user.service';
 
 @Injectable()
-export class TodoService {
+export class TodosService {
   constructor(
     @InjectRepository(TodoEntity)
     private readonly todoRepository: Repository<TodoEntity>,
-    private readonly userService: UserService,
   ) {}
 
-  async createTodo(userEmail: string, todoText: string): Promise<TodoEntity> {
-    const user = await this.userService.findByEmail(userEmail);
-    if (!user) {
-      throw new NotFoundException('사용자를 찾을 수 없습니다.');
-    }
-
+  async createTodo(user: UserEntity, todoText: string): Promise<TodoEntity> {
     const newTodo = this.todoRepository.create({
       todo: todoText,
       isCompleted: false,
-      user: user,
+      user: user, // UserEntity와 TodoEntity를 연결합니다.
     });
-
-    return await this.todoRepository.save(newTodo);
+    return this.todoRepository.save(newTodo);
   }
-
-  async getAllTodosByUser(userEmail: string): Promise<TodoEntity[]> {
-    const user = await this.userService.findByEmail(userEmail);
-    if (!user) {
-      throw new NotFoundException('사용자를 찾을 수 없습니다.');
-    }
-
-    return await this.todoRepository.find({ user });
+  async getTodosByUser(user: UserEntity): Promise<TodoEntity[]> {
+    return this.todoRepository.find({ where: { user } });
   }
-
-  async updateTodo(todoId: number, todoText: string): Promise<TodoEntity> {
-    const todo = await this.todoRepository.findOne(todoId);
-    if (!todo) {
-      throw new NotFoundException('할일을 찾을 수 없습니다.');
+  async updateTodo(
+    id: number,
+    updatedTodo: Partial<TodoEntity>,
+  ): Promise<TodoEntity | null> {
+    const todoToUpdate = await this.todoRepository.findOne({ where: { id } });
+    if (!todoToUpdate) {
+      return null; // Todo with the provided id was not found
     }
-
-    todo.todo = todoText;
-    return await this.todoRepository.save(todo);
+    Object.assign(todoToUpdate, updatedTodo); // Update fields
+    return this.todoRepository.save(todoToUpdate);
   }
-
-  async deleteTodo(todoId: number): Promise<void> {
-    const todo = await this.todoRepository.findOne(todoId);
-    if (!todo) {
-      throw new NotFoundException('할일을 찾을 수 없습니다.');
-    }
-
-    await this.todoRepository.remove(todo);
+  async deleteTodo(id: number): Promise<void> {
+    await this.todoRepository.delete(id);
   }
 }

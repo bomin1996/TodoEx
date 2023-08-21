@@ -5,7 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { UserEntity } from '../../user/entities/user.entity'; // UserEntity의 경로에 맞게 수정하세요.
+import { UserEntity } from '../../user/entities/user.entity';
 
 @Entity({ name: 'todo' })
 export class TodoEntity {

@@ -12,7 +12,7 @@ import { LocalAuthGuard } from './auth.guard';
     UserModule,
     JwtModule.register({
       secret: 'your-secret-key', // 실제로는 더 강력한 키를 사용해야 합니다.
-      signOptions: { expiresIn: '10s' }, // 토큰 유효 기간 설정
+      signOptions: { expiresIn: '5m' }, // 토큰 유효 기간 설정
     }),
   ],
   controllers: [AuthController],

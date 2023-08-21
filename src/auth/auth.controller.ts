@@ -7,7 +7,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @UseGuards(LocalAuthGuard)
-  @Post('login')
+  @Post('signin')
   async login(@Req() req, @Res() res) {
     const { access_token } = await this.authService.generateToken(req.user); // async/await로 변경
 
