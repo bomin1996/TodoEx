@@ -41,4 +41,10 @@ export class UserService {
   async findByEmail(email: string): Promise<UserEntity | undefined> {
     return await this.userRepository.findOne({ where: { email } });
   }
+  async isEmailUnique(email: string): Promise<boolean> {
+    const existingUser = await this.userRepository.findOne({
+      where: { email },
+    });
+    return !existingUser; // 이메일이 이미 존재하면 false 반환, 존재하지 않으면 true 반환
+  }
 }

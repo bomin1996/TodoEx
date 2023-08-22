@@ -3,13 +3,13 @@ import {
   Controller,
   Post,
   UseGuards,
-  Request,
   Get,
   Put,
   Param,
   ParseIntPipe,
   Delete,
   Res,
+  Req,
 } from '@nestjs/common';
 import { TodosService } from './todos.service';
 import { TodoEntity } from './entities/todo.entity';
@@ -20,16 +20,12 @@ import { Response } from 'express';
 export class TodosController {
   constructor(private readonly todosService: TodosService) {}
 
-  @UseGuards(JwtAuthGuard) // Apply JwtAuthGuard to secure this route
+  @UseGuards(JwtAuthGuard)
   @Post()
-  async createTodo(
-    @Request() req, // Use @Request() decorator to access request object
-    @Body('todo') todoText: string, // Extract todo text from request body
-  ): Promise<TodoEntity> {
-    const user = req.user; // Access user object from request
-
-    const newTodo = await this.todosService.createTodo(todoText, req);
-
+  async createTodo(@Req() req, @Body() todo: TodoEntity): Promise<TodoEntity> {
+    const user = req.user;
+    console.log(user.email);
+    const newTodo = await this.todosService.createTodo(user, todo.todo); // 유저 정보와 할 일 텍스트 전달
     return {
       id: newTodo.id,
       todo: newTodo.todo,
@@ -39,7 +35,7 @@ export class TodosController {
   }
   @UseGuards(JwtAuthGuard) // Apply JwtAuthGuard to secure this route
   @Get()
-  async getTodos(@Request() req): Promise<TodoEntity[]> {
+  async getTodos(@Req() req): Promise<TodoEntity[]> {
     const user = req.user;
     return this.todosService.getTodosByUser(user);
   }
@@ -61,8 +57,10 @@ export class TodosController {
   async deleteTodo(
     @Param('id', ParseIntPipe) id: number,
     @Res() response: Response,
+    @Req() req,
   ): Promise<void> {
-    await this.todosService.deleteTodo(id);
+    const user = req.user;
+    await this.todosService.deleteTodo(id, user);
     response.status(204).send(); // Set status code to 204 and send response without body
   }
 }

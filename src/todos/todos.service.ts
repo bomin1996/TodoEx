@@ -26,14 +26,16 @@ export class TodosService {
     id: number,
     updatedTodo: Partial<TodoEntity>,
   ): Promise<TodoEntity | null> {
-    const todoToUpdate = await this.todoRepository.findOne({ where: { id } });
-    if (!todoToUpdate) {
+    const todo = await this.todoRepository.findOne({
+      where: { id, user: updatedTodo.user },
+    });
+    if (!todo) {
       return null; // Todo with the provided id was not found
     }
-    Object.assign(todoToUpdate, updatedTodo); // Update fields
-    return this.todoRepository.save(todoToUpdate);
+    Object.assign(todo, updatedTodo); // Update fields
+    return this.todoRepository.save(todo);
   }
-  async deleteTodo(id: number): Promise<void> {
-    await this.todoRepository.delete(id);
+  async deleteTodo(id: number, user: UserEntity): Promise<void> {
+    await this.todoRepository.delete({ id, user });
   }
 }

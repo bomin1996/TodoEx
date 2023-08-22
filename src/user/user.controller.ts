@@ -25,14 +25,17 @@ export class UserController {
       if (!this.isEmailValid(user.email)) {
         throw new BadRequestException('유효하지 않은 이메일 형식입니다.');
       }
-      await this.userService.create(user);
-      res.status(HttpStatus.CREATED).send();
-    } catch (error) {
-      if (error.code === 'ER_DUP_ENTRY') {
+      const isEmailUnique = await this.userService.isEmailUnique(user.email);
+      if (!isEmailUnique) {
         res
           .status(HttpStatus.BAD_REQUEST)
           .json({ error: '중복된 이메일 주소입니다.' });
-      } else if (error instanceof BadRequestException) {
+      } else {
+        await this.userService.create(user);
+        res.status(HttpStatus.CREATED).send();
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) {
         res.status(HttpStatus.BAD_REQUEST).json({ error: error.message });
       } else {
         res
@@ -41,6 +44,12 @@ export class UserController {
       }
     }
   }
+
+  async isEmailUnique(email: string): Promise<boolean> {
+    const existingUser = await this.userService.findByEmail(email);
+    return !existingUser; // 이메일이 이미 존재하면 false 반환, 존재하지 않으면 true 반환
+  }
+
   private isEmailValid(email: string): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); //간단한 이메일 형식 체크
   }
